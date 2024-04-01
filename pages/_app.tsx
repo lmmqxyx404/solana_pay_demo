@@ -9,6 +9,8 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Head>
         <title>Cookies Inc</title>
       </Head>
+      <Component {...pageProps} />
+
     </Layout>
   )
 }
