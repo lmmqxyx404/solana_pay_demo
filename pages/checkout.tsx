@@ -1,10 +1,11 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import BackLink from "../components/BackLink";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import Loading from "../components/Loading";
-import { Keypair } from "@solana/web3.js";
+import { Keypair, Transaction } from "@solana/web3.js";
+import { MakeTransactionInputData, MakeTransactionOutputData } from "./api/makeTransaction";
 
 export default function Checkout() {
   const router = useRouter();
@@ -12,6 +13,9 @@ export default function Checkout() {
 
   const [message, setMessage] = useState<string | null>(null);
 
+  // State to hold API response fields
+  const [transaction, setTransaction] = useState<Transaction | null>(null);
+  
   /** 1. Read the URL query (which includes our chosen products)  */
   const searchParams = new URLSearchParams();
   for (const [key, value] of Object.entries(router.query)) {
@@ -32,7 +36,41 @@ export default function Checkout() {
   // 3. Add it to the params we'll pass to the API */
   searchParams.append('reference', reference.toString());
   /** 4. Use our API to fetch the transaction for the selected items */
-  
+  // Use our API to fetch the transaction for the selected items
+  async function getTransaction() {
+    if (!publicKey) {
+      return;
+    }
+
+    const body: MakeTransactionInputData = {
+      account: publicKey.toString(),
+    }
+
+    const response = await fetch(`/api/makeTransaction?${searchParams.toString()}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body),
+    })
+
+    const json = await response.json() as MakeTransactionOutputData
+
+    if (response.status !== 200) {
+      console.error(json);
+      return;
+    }
+
+    // Deserialize the transaction from the response
+    const transaction = Transaction.from(Buffer.from(json.transaction, 'base64'));
+    setTransaction(transaction);
+    setMessage(json.message);
+    console.log(transaction);
+  }
+
+  useEffect(() => {
+    getTransaction()
+  }, [publicKey])
 
   if (!publicKey) {
     return (
