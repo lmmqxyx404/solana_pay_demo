@@ -1,4 +1,4 @@
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import BackLink from "../components/BackLink";
@@ -15,7 +15,9 @@ export default function Checkout() {
 
   // State to hold API response fields
   const [transaction, setTransaction] = useState<Transaction | null>(null);
-  
+
+  const { connection } = useConnection();
+
   /** 1. Read the URL query (which includes our chosen products)  */
   const searchParams = new URLSearchParams();
   for (const [key, value] of Object.entries(router.query)) {
@@ -72,6 +74,23 @@ export default function Checkout() {
     getTransaction()
   }, [publicKey])
 
+  /** Send the fetched transaction to the connected wallet */
+  async function trySendTransaction() {
+    if (!transaction) {
+      return;
+    }
+    try {
+      await sendTransaction(transaction, connection)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  // Send the transaction once it's fetched
+  useEffect(() => {
+    trySendTransaction()
+  }, [transaction])
+  
   if (!publicKey) {
     return (
       <div className='flex flex-col items-center gap-8'>
