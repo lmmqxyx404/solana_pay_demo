@@ -6,6 +6,7 @@ import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import Loading from "../components/Loading";
 import { Keypair, Transaction } from "@solana/web3.js";
 import { MakeTransactionInputData, MakeTransactionOutputData } from "./api/makeTransaction";
+import { findReference, FindReferenceError } from "@solana/pay";
 
 export default function Checkout() {
   const router = useRouter();
@@ -90,7 +91,27 @@ export default function Checkout() {
   useEffect(() => {
     trySendTransaction()
   }, [transaction])
-  
+
+  // Check every 0.5s if the transaction is completed
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        // Check if there is any transaction for the reference
+        const signatureInfo = await findReference(connection, reference);
+        router.push('/confirmed')
+      } catch (e) {
+        if (e instanceof FindReferenceError) {
+          // No transaction found yet, ignore this error
+          return;
+        }
+        console.error('Unknown error', e)
+      }
+    }, 500)
+    return () => {
+      clearInterval(interval)
+    }
+  }, [])
+
   if (!publicKey) {
     return (
       <div className='flex flex-col items-center gap-8'>
