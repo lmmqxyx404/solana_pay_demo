@@ -1,16 +1,23 @@
-import { WalletAdapterNetwork } from "@solana/wallet-adapter-base"
-import { clusterApiUrl, Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js"
-import { NextApiRequest, NextApiResponse } from "next"
-import { shopAddress } from "../../lib/addresses"
-import calculatePrice from "../../lib/calculatePrice"
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
+import {
+  clusterApiUrl,
+  Connection,
+  PublicKey,
+  Transaction,
+  SystemProgram,
+  LAMPORTS_PER_SOL,
+} from '@solana/web3.js'
+import { NextApiRequest, NextApiResponse } from 'next'
+import { shopAddress } from '../../lib/addresses'
+import calculatePrice from '../../lib/calculatePrice'
 
 export type MakeTransactionInputData = {
-  account: string,
+  account: string
 }
 
 export type MakeTransactionOutputData = {
-  transaction: string,
-  message: string,
+  transaction: string
+  message: string
 }
 
 type ErrorOutput = {
@@ -32,25 +39,26 @@ export default async function handler(
     // We pass the reference to use in the query
     const { reference } = req.query
     if (!reference) {
-      res.status(400).json({ error: "No reference provided" })
+      res.status(400).json({ error: 'No reference provided' })
       return
     }
 
     // We pass the buyer's public key in JSON body
     const { account } = req.body as MakeTransactionInputData
     if (!account) {
-      res.status(400).json({ error: "No account provided" })
+      res.status(400).json({ error: 'No account provided' })
       return
     }
     const buyerPublicKey = new PublicKey(account)
     const shopPublicKey = shopAddress
 
-    const network = WalletAdapterNetwork.Devnet
+    /** TAG: 使用 test 网络 */
+    const network = WalletAdapterNetwork.Testnet
     const endpoint = clusterApiUrl(network)
     const connection = new Connection(endpoint)
 
     // Get a recent blockhash to include in the transaction
-    const { blockhash } = await (connection.getLatestBlockhash('finalized'))
+    const { blockhash } = await connection.getLatestBlockhash('finalized')
 
     const transaction = new Transaction({
       recentBlockhash: blockhash,
@@ -79,7 +87,7 @@ export default async function handler(
     // Serialize the transaction and convert to base64 to return it
     const serializedTransaction = transaction.serialize({
       // We will need the buyer to sign this transaction after it's returned to them
-      requireAllSignatures: false
+      requireAllSignatures: false,
     })
     const base64 = serializedTransaction.toString('base64')
 
@@ -88,12 +96,12 @@ export default async function handler(
     // Return the serialized transaction
     res.status(200).json({
       transaction: base64,
-      message: "Thanks for your order! 🍪",
+      message: 'Thanks for your order! 🍪',
     })
   } catch (err) {
-    console.error(err);
+    console.error('errored', err)
 
-    res.status(500).json({ error: 'error creating transaction', })
+    res.status(500).json({ error: 'error creating transaction' })
     return
   }
 }
