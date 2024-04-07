@@ -2,11 +2,24 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import BackLink from "../components/BackLink";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+// import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import Loading from "../components/Loading";
 import { Keypair, Transaction } from "@solana/web3.js";
 import { MakeTransactionInputData, MakeTransactionOutputData } from "./api/makeTransaction";
 import { findReference, FindReferenceError } from "@solana/pay";
+
+import dynamic from 'next/dynamic'
+/**to solve the error */
+const WalletMultiButton = dynamic(
+  () =>
+    import('@solana/wallet-adapter-react-ui').then(
+      (mod) => mod.WalletMultiButton
+    ),
+
+  {
+    ssr: false,
+  }
+)
 
 export default function Checkout() {
   const router = useRouter();

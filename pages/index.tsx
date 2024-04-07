@@ -1,7 +1,22 @@
 import { useWallet } from '@solana/wallet-adapter-react'
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+
+// import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import Products from '../components/Products'
 import SiteHeading from '../components/SiteHeading'
+
+
+import dynamic from 'next/dynamic'
+/**to solve the error */
+const WalletMultiButton = dynamic(
+  () =>
+    import('@solana/wallet-adapter-react-ui').then(
+      (mod) => mod.WalletMultiButton
+    ),
+
+  {
+    ssr: false,
+  }
+)
 
 export default function HomePage() {
   // We get the public key of the connected wallet, if there is one
@@ -13,11 +28,11 @@ export default function HomePage() {
 
       {/* We add the Solana wallet connect button */}
       <div className="basis-1/4">
-        <WalletMultiButton className='!bg-gray-900 hover:scale-105' />
+        <WalletMultiButton className="!bg-gray-900 hover:scale-105" />
       </div>
 
       {/* We disable checking out without a connected wallet */}
-      <Products submitTarget='/checkout' enabled={publicKey !== null} />
+      <Products submitTarget="/checkout" enabled={publicKey !== null} />
     </div>
   )
 }
