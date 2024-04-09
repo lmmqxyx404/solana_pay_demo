@@ -2,6 +2,7 @@ import { PublicKey } from '@solana/web3.js'
 
 // Your shop wallet address
 // todo: change the following address
+// mobile GWqjdGEk827i58jwFERrPHG1ECsttDb6S8jPs9eUBQnx
 export const shopAddress = new PublicKey(
-  '284poV7uiYo9pyAGQc6VFXHXGnNJ2z3LdRBF3h5ZB8Gu'
+  'GWqjdGEk827i58jwFERrPHG1ECsttDb6S8jPs9eUBQnx'
 )

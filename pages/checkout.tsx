@@ -119,7 +119,7 @@ export default function Checkout() {
         }
         console.error('Unknown error', e)
       }
-    }, 500)
+    }, 5000)
     return () => {
       clearInterval(interval)
     }
