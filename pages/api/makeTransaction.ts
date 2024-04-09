@@ -90,6 +90,7 @@ export default async function handler(
       requireAllSignatures: false,
     })
     const base64 = serializedTransaction.toString('base64')
+    console.log(base64)
 
     // Insert into database: reference, amount
 
