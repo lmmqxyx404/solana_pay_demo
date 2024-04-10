@@ -4,6 +4,7 @@ import {
   LAMPORTS_PER_SOL,
   SystemProgram,
   Transaction,
+  clusterApiUrl,
   sendAndConfirmTransaction
 } from '@solana/web3.js';
 
@@ -11,7 +12,7 @@ import {
 (async () => {
   // Establish a connection to the Solana testnet
   const connection = new Connection(
-    Connection.clusterApiUrl('testnet'),
+    clusterApiUrl("testnet"),
     'confirmed'
   );
 
