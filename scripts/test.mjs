@@ -8,15 +8,18 @@ import {
   Transaction,
   clusterApiUrl,
   sendAndConfirmTransaction,
+
 } from '@solana/web3.js'
 import base58 from 'bs58'
-
+import { private_keys } from './private_key.mjs'
+// 1. 配置连接到 Solana 测试网络
 const network = WalletAdapterNetwork.Testnet
 const endpoint = clusterApiUrl(network)
 const connection = new Connection(endpoint)
+
 console.log(connection)
 
-const transferSolana=async (senderKeypair, receiverPublicKey, amount)=>{
+const transferSolana = async (senderKeypair, receiverPublicKey, amount) => {
   // 创建交易指令
   const transaction = new Transaction().add(
     SystemProgram.transfer({
@@ -39,8 +42,8 @@ async function requestAirdrop(publicKey) {
 
   // 请求空投
   const airdropSignature = await connection.requestAirdrop(
-      publicKey,
-      LAMPORTS_PER_SOL // 1 SOL
+    publicKey,
+    LAMPORTS_PER_SOL // 1 SOL
   );
 
   // 确认交易
@@ -52,17 +55,24 @@ async function requestAirdrop(publicKey) {
   console.log(`Wallet balance: ${balance / LAMPORTS_PER_SOL} SOL`);
 }
 
-try {
-  const { blockhash } = await connection.getLatestBlockhash('finalized')
-  console.log(blockhash)
+const main = async () => {
+  try {
+    const keys=private_keys.map(e=>e.value)
+    const { blockhash } = await connection.getLatestBlockhash('finalized')
+    console.log(blockhash)
 
-  // const senderSecretKey = base58.decode()
-  const senderKeypair = Keypair.fromSecretKey(senderSecretKey)
-  // const publicKey = new PublicKey();
-  // await requestAirdrop(publicKey)
-  const res=await transferSolana(senderKeypair, publicKey, 0.01)
-  console.log(res);
-} catch (e) {
-  console.log(e)
+    // const senderSecretKey = base58.decode('')
+    const senderKeypair = Keypair.fromSecretKey(senderSecretKey)
+    // const publicKey = new PublicKey();
+    // await requestAirdrop(publicKey)
+    const res = await transferSolana(senderKeypair, publicKey, 0.01)
+    console.log(res);
+  } catch (e) {
+    console.log(e)
+  }
 }
 
+
+await main()
+// console.log();
+// console.log(process.env);

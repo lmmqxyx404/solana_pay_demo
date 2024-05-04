@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "test": "node scripts/test.mjs",
+    "test": "tsx scripts/test.mjs",
     "send": "node scripts/send_transaction.mjs",
     "start": "next start"
   },
@@ -25,6 +25,7 @@
   "devDependencies": {
     "@types/node": "latest",
     "@types/react": "latest",
+    "tsx": "latest",
     "autoprefixer": "^10.4.0",
     "postcss": "^8.4.5",
     "prettier": "^2.5.1",
