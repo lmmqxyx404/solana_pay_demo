@@ -12,12 +12,6 @@ import {
 } from '@solana/web3.js'
 import base58 from 'bs58'
 import { private_keys } from './private_key.mjs'
-// 1. 配置连接到 Solana 测试网络
-const network = WalletAdapterNetwork.Testnet
-const endpoint = clusterApiUrl(network)
-const connection = new Connection(endpoint)
-
-console.log(connection)
 
 const transferSolana = async (senderKeypair, receiverPublicKey, amount) => {
   // 创建交易指令
@@ -33,11 +27,12 @@ const transferSolana = async (senderKeypair, receiverPublicKey, amount) => {
   const signature = await sendAndConfirmTransaction(connection, transaction, [
     senderKeypair,
   ])
+  console.log(signature);
   return signature
 }
 
 // 定义一个异步函数来请求空投
-async function requestAirdrop(publicKey) {
+async function requestAirdrop(publicKey, connection) {
   console.log(`Requesting airdrop to wallet: ${publicKey}`);
 
   // 请求空投
@@ -55,20 +50,44 @@ async function requestAirdrop(publicKey) {
   console.log(`Wallet balance: ${balance / LAMPORTS_PER_SOL} SOL`);
 }
 
+
 const main = async () => {
   try {
-    const keys=private_keys.map(e=>e.value)
+    // 1. 配置连接到 Solana 测试网络
+    const network = WalletAdapterNetwork.Testnet
+    const endpoint = clusterApiUrl(network)
+    const connection = new Connection(endpoint, 'confirmed')
     const { blockhash } = await connection.getLatestBlockhash('finalized')
-    console.log(blockhash)
+    // console.log(connection)
+    //console.log(blockhash)
+    const keys = private_keys.map(e => e.value)
 
     // const senderSecretKey = base58.decode('')
-    const senderKeypair = Keypair.fromSecretKey(senderSecretKey)
+    // const senderKeypair = Keypair.fromSecretKey(senderSecretKey)
     // const publicKey = new PublicKey();
-    // await requestAirdrop(publicKey)
-    const res = await transferSolana(senderKeypair, publicKey, 0.01)
-    console.log(res);
+    const arr = keys.map(element => {
+      console.log(element);
+      const key_pair = Keypair.fromSecretKey(base58.decode(element));
+      // 1. getBalance
+      // return connection.getBalance(key_pair.publicKey,'confirmed')
+      return connection.getAccountInfo(key_pair.publicKey, 'confirmed')
+      // return requestAirdrop(key_pair.publicKey, connection)
+    });
+    let res = await Promise.all(arr);
+    res = res.map((e, index) => {
+      return {
+        key_pair: Keypair.fromSecretKey(base58.decode(keys[index])),
+        ...e,
+      }
+    })
+    res.sort((a, b) => a.lamports > b.lamports)
+    // divid(res);
+    // console.log(res);
+    // const res = await transferSolana(senderKeypair, publicKey, 0.01)
+    // console.log(res);
   } catch (e) {
     console.log(e)
+    console.log('main paniced');
   }
 }
 
