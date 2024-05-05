@@ -13,13 +13,13 @@ import {
 import base58 from 'bs58'
 import { private_keys } from './private_key.mjs'
 
-const transferSolana = async (senderKeypair, receiverPublicKey, amount) => {
+const transferSolana = async (senderKeypair, receiverPublicKey, amount, connection) => {
   // 创建交易指令
   const transaction = new Transaction().add(
     SystemProgram.transfer({
       fromPubkey: senderKeypair.publicKey,
       toPubkey: receiverPublicKey,
-      lamports: amount * LAMPORTS_PER_SOL, // 将 SOL 转换为 lamports
+      lamports: amount, // 将 SOL 转换为 lamports
     })
   )
 
@@ -50,6 +50,31 @@ async function requestAirdrop(publicKey, connection) {
   console.log(`Wallet balance: ${balance / LAMPORTS_PER_SOL} SOL`);
 }
 
+// Equal distribution of all balances in the accounts
+const divid = async (accounts, connection) => {
+  const totalBalance = accounts.map(e => e.lamports).reduce((acc, balance) => acc + balance, 0);
+  // const totalBalance = res.reduce((acc, balance) => acc.lamports + balance, 0);
+  let head = 0, tail = accounts.length - 1, divid_number = Math.floor((totalBalance / accounts.length));
+  while (head < tail) {
+    const head_num = await connection.getBalance(accounts[head].key_pair.publicKey, 'confirmed')
+    const tail_num = await connection.getBalance(accounts[tail].key_pair.publicKey, 'confirmed')
+    let toReduce = head_num - divid_number;
+    let toAdd = divid_number - tail_num;
+    if (toReduce < toAdd) {
+      await transferSolana(accounts[head].key_pair, accounts[tail].key_pair.publicKey, toReduce, connection)
+      head++;
+    } else if (toReduce > toAdd) {
+      await transferSolana(accounts[head].key_pair, accounts[tail].key_pair.publicKey, toAdd, connection)
+      tail--
+    } else {
+      await transferSolana(accounts[head].key_pair, accounts[tail].key_pair.publicKey, toAdd, connection)
+      head++;
+      tail--;
+    }
+  }
+  // console.log(totalBalance);
+  // console.log(accounts);
+}
 
 const main = async () => {
   try {
@@ -81,7 +106,8 @@ const main = async () => {
       }
     })
     res.sort((a, b) => a.lamports > b.lamports)
-    // divid(res);
+    await divid(res, connection);
+    // transferSolana(res[0].key_pair, res[2].key_pair.publicKey, 0.1 * LAMPORTS_PER_SOL, connection)
     // console.log(res);
     // const res = await transferSolana(senderKeypair, publicKey, 0.01)
     // console.log(res);
