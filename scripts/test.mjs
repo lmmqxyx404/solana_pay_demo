@@ -53,6 +53,7 @@ async function requestAirdrop(publicKey, connection) {
 // Equal distribution of all balances in the accounts
 const divid = async (accounts, connection) => {
   const totalBalance = accounts.map(e => e.lamports).reduce((acc, balance) => acc + balance, 0);
+  console.log(Math.floor(totalBalance/LAMPORTS_PER_SOL) );
   // const totalBalance = res.reduce((acc, balance) => acc.lamports + balance, 0);
   let head = 0, tail = accounts.length - 1, divid_number = Math.floor((totalBalance / accounts.length));
   while (head < tail) {
@@ -61,12 +62,15 @@ const divid = async (accounts, connection) => {
     let toReduce = head_num - divid_number;
     let toAdd = divid_number - tail_num;
     if (toReduce < toAdd) {
+      
       await transferSolana(accounts[head].key_pair, accounts[tail].key_pair.publicKey, toReduce, connection)
       head++;
     } else if (toReduce > toAdd) {
+      
       await transferSolana(accounts[head].key_pair, accounts[tail].key_pair.publicKey, toAdd, connection)
       tail--
     } else {
+      
       await transferSolana(accounts[head].key_pair, accounts[tail].key_pair.publicKey, toAdd, connection)
       head++;
       tail--;
@@ -105,7 +109,7 @@ const main = async () => {
         ...e,
       }
     })
-    res.sort((a, b) => a.lamports > b.lamports)
+    res.sort((a, b) => b.lamports - a.lamports)
     await divid(res, connection);
     // transferSolana(res[0].key_pair, res[2].key_pair.publicKey, 0.1 * LAMPORTS_PER_SOL, connection)
     // console.log(res);
